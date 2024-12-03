@@ -3,7 +3,7 @@ Imports System
 Public Module Program
 
     Sub Main(args As String())
-        Reports()
+        Multiply()
         Dim x = Console.ReadLine()
     End Sub
 End Module
