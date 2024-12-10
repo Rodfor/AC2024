@@ -64,7 +64,7 @@
         If Math.Abs(newX) < Math.Abs(newY) Then
             factor = Math.Abs(1 / newX)
             newX = CInt(X * factor)
-            newY = CInt(Y * factor)
+            newY = CInt(Y * factor) KApotq
         Else
             newX = 1 / newY * newX
             newY = 1
