@@ -42,57 +42,62 @@ Module Bridge
         Dim totaal As Long = 0
 
         For Each T In Tests
-            Dim str = Iterate(T.Waardes.Count - 1, T.Totaal, T.Waardes)
-            If T.IsCorrect.Length > 0 Then totaal += T.Totaal
-            Console.WriteLine(T.Totaal.ToString + " - " + str)
+            If T.IsCorrect Then totaal += T.Totaal
+
         Next
 
         Console.WriteLine(totaal.ToString)
 
     End Sub
 
-    Private Function Iterate(index As Short, currentWaarde As Long, waardes As List(Of Integer)) As String
+    'Private Function Iterate(index As Short, currentWaarde As Long, waardes As List(Of Integer)) As String
 
-        If index = -1 Then
-            If currentWaarde = 0 Then Return "END" Else Return ""
-        End If
+    '    If index = -1 Then
+    '        If currentWaarde = 0 Then Return "END" Else Return ""
+    '    End If
 
-        If currentWaarde - waardes(index) >= 0 Then
-            Dim str = Iterate(index - 1, currentWaarde - waardes(index), waardes)
-            If str.Length > 0 Then
-                Return str + "+" + waardes(index).ToString
-            End If
-        End If
+    '    If currentWaarde - waardes(index) >= 0 Then
+    '        Dim str = Iterate(index - 1, currentWaarde - waardes(index), waardes)
+    '        If str.Length > 0 Then
+    '            Return str + "+" + waardes(index).ToString
+    '        End If
+    '    End If
 
-        If currentWaarde > 0 AndAlso currentWaarde Mod waardes(index) = 0 Then
-            Dim str = Iterate(index - 1, currentWaarde / waardes(index), waardes)
-            If str.Length > 0 Then
-                Return str + "*" + waardes(index).ToString
-            End If
-        End If
+    '    If currentWaarde > 0 AndAlso currentWaarde Mod waardes(index) = 0 Then
+    '        Dim str = Iterate(index - 1, currentWaarde / waardes(index), waardes)
+    '        If str.Length > 0 Then
+    '            Return str + "*" + waardes(index).ToString
+    '        End If
+    '    End If
 
-        If index > 0 Then
-            Dim newWaardes As List(Of Integer) = waardes.Take(index - 1).ToList()
+    '    If index > 0 AndAlso currentWaarde.ToString.EndsWith(waardes(index).ToString) Then
+    '        Dim str = Iterate(index - 1, currentWaarde.ToString.Substring(0, currentWaarde.ToString.Length() - waardes(index).ToString.Length))
 
-        End If
+    '    End If
 
-        Return ""
+    '    Return ""
 
-    End Function
+    'End Function
 
 
     Private Class Test
         Public Totaal As Long
         Public Waardes As List(Of Integer)
 
-
-        Public Function IsCorrect() As String
-            Return iterate(Waardes.Count - 1, Totaal)
+        Public Function IsCorrect() As Boolean
+            Dim str = iterate(Waardes.Count - 1, Totaal)
+            Console.WriteLine(Totaal.ToString + " - " + str)
+            Return str.Length > 0
         End Function
 
         Public Function iterate(index As Short, currentWaarde As Long) As String
-            If index = -1 Then
-                If currentWaarde = 0 Then Return "END" Else Return ""
+
+            If index = 0 Then
+                If currentWaarde = Waardes(index) Then
+                    Return "END+" + Waardes(index).ToString
+                Else
+                    Return ""
+                End If
             End If
 
             If currentWaarde - Waardes(index) >= 0 Then
@@ -106,6 +111,14 @@ Module Bridge
                 Dim str = iterate(index - 1, currentWaarde / Waardes(index))
                 If str.Length > 0 Then
                     Return str + "*" + Waardes(index).ToString
+                End If
+            End If
+
+            If currentWaarde.ToString.EndsWith(Waardes(index).ToString) Then
+                If currentWaarde = Waardes(index) Then Return ""
+                Dim str = iterate(index - 1, currentWaarde.ToString.Substring(0, currentWaarde.ToString.Length() - Waardes(index).ToString.Length))
+                If str.Length > 0 Then
+                    Return str + "||" + Waardes(index).ToString
                 End If
             End If
 
