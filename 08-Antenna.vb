@@ -33,16 +33,39 @@ Module Antenna
         For Each T In Antennes
             Dim AntennesVanType = T.Value
             For i = 0 To AntennesVanType.Count() - 1
+                If AntennesVanType.Count() > 1 Then
+                    Antinodes.TryAdd(AntennesVanType(i).Key, T.Key)
+                End If
+
                 For j = i + 1 To AntennesVanType.Count - 1
                     Dim offset As Vector2D = Vector2D.Subtract(AntennesVanType(i), AntennesVanType(j))
-                    offset = offset.Normalize
-                    Dim v1 As Vector2D = Vector2D.Add(AntennesVanType(i), offset)
-                    Dim v2 As Vector2D = Vector2D.Subtract(AntennesVanType(j), offset)
+                    Dim ggd = VindGgd(offset.X, offset.y)
+                    offset = Vector2D.Multiply(offset, 1/ggd)
 
-                    Console.WriteLine(AntennesVanType(i).ToString + "," + AntennesVanType(j).ToString + " - " + v1.ToString + ", " + v2.ToString)
+                    Console.WriteLine("Offset " + AntennesVanType(i).ToString + "," + AntennesVanType(j).ToString + " - " + offset.tostring)
 
-                    If Vector2D.InGrid(v1, UpperX, UpperY) Then Antinodes.TryAdd(v1.Key, T.Key)
-                    If Vector2D.InGrid(v2, UpperX, UpperY) Then Antinodes.TryAdd(v2.Key, T.Key)
+                    Dim v1 As Vector2D = AntennesVanType(i)
+                    Dim v2 As Vector2D = AntennesVanType(j)
+
+                    While True
+                        v1 = Vector2D.Add(v1, offset)
+                        If Vector2D.InBounds(v1, UpperX, UpperY) Then
+                            Antinodes.TryAdd(v1.Key, T.Key)
+                              Console.WriteLine(AntennesVanType(i).ToString + "," + AntennesVanType(j).ToString + " - " + v1.ToString)
+                        Else
+                            Exit While
+                        End If
+                    End While
+
+                     While True
+                        v2 = Vector2D.Subtract(v2, offset)
+                        If Vector2D.InBounds(v2, UpperX, UpperY) Then
+                            Antinodes.TryAdd(v2.Key, T.Key)
+                              Console.WriteLine(AntennesVanType(i).ToString + "," + AntennesVanType(j).ToString + " - " + v2.ToString)
+                        Else
+                            Exit While
+                        End If
+                    End While               
                 Next
             Next
         Next
@@ -90,8 +113,8 @@ Module Antenna
 
                     Console.WriteLine(AntennesVanType(i).ToString + "," + AntennesVanType(j).ToString + " - " + v1.ToString + ", " + v2.ToString)
 
-                    If Vector2D.InGrid(v1, UpperX, UpperY) Then Antinodes.TryAdd(v1.Key, T.Key)
-                    If Vector2D.InGrid(v2, UpperX, UpperY) Then Antinodes.TryAdd(v2.Key, T.Key)
+                    If Vector2D.InBounds(v1, UpperX, UpperY) Then Antinodes.TryAdd(v1.Key, T.Key)
+                    If Vector2D.InBounds(v2, UpperX, UpperY) Then Antinodes.TryAdd(v2.Key, T.Key)
                 Next
             Next
         Next

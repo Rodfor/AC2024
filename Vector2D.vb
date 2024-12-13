@@ -50,35 +50,12 @@
         Return New Vector2D(X / len, Y / len)
     End Function
 
-    ' Normaliseren van de vector
-    Public Function NormalizeInt() As Vector2D
-        Dim len As Double = Me.Length()
-        If len = 0 Then
-            Throw New InvalidOperationException("Kan een nulvector niet normaliseren.")
-        End If
-
-        Dim newX = X / len
-        Dim newY = Y / len
-        Dim factor As Double
-
-        If Math.Abs(newX) < Math.Abs(newY) Then
-            factor = Math.Abs(1 / newX)
-            newX = CInt(X * factor)
-            newY = CInt(Y * factor) KApotq
-        Else
-            newX = 1 / newY * newX
-            newY = 1
-        End If
-
-        Return New Vector2D(newX, newY)
-    End Function
-
     ' Berekening van het dot-product
     Public Shared Function Dot(v1 As Vector2D, v2 As Vector2D) As Double
         Return v1.X * v2.X + v1.Y * v2.Y
     End Function
 
-    Public Shared Function InGrid(v1 As Vector2D, UpperX As Double, UpperY As Double) As Boolean
+    Public Shared Function InBounds(v1 As Vector2D, UpperX As Double, UpperY As Double) As Boolean
         Return v1.X <= UpperX AndAlso v1.X >= 0 AndAlso v1.Y <= UpperY AndAlso v1.Y >= 0
     End Function
 End Class
