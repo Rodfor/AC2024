@@ -5,6 +5,7 @@ Module Garden
     Private upperY As Integer
     Private Map As New Dictionary(Of (x As Integer, y As Integer), Char)
     Private areas As New Dictionary(Of Integer, Dictionary(Of (x As Integer, y As Integer), Integer))
+    Private hoekenInt As New Dictionary(Of Integer, Integer)
 
     Public Sub Perimeter()
         Dim fileName As String = "Garden.txt"
@@ -30,7 +31,8 @@ Module Garden
             If N.Value = "/" Then Continue For
             Dim subtotaal As Integer = 0
             areas.Add(area, New Dictionary(Of (x As Integer, y As Integer), Integer))
-            Dim kanten = FindNeighboursAndHoeken(N.Key, area, -1)
+            hoekenInt.Add(area, 0)
+            FindNeighbours(N.Key, area)
 
             For Each T In areas(area)
                 subtotaal += T.Value
@@ -38,13 +40,13 @@ Module Garden
             Next
 
             Dim prijs As Integer = areas(area).Count * subtotaal
-            Dim prijsBulk As Integer = areas(area).Count * kanten
+            Dim prijsBulk As Integer = areas(area).Count * hoekenInt(area)
 
             ' Console.WriteLine(N.Value + " - " + areas(area).Count.ToString + " * " + subtotaal.ToString + " = " + prijs.ToString)
 
-            Console.WriteLine(N.Value + " - " + areas(area).Count.ToString + " * " + kanten.ToString + " = " + prijsBulk.ToString)
+            Console.WriteLine(N.Value + " - " + areas(area).Count.ToString + " * " + hoekenInt(area).ToString + " = " + prijsBulk.ToString)
 
-            totaal += prijs
+            totaal += prijsBulk
 
             area += 1
         Next
@@ -53,97 +55,94 @@ Module Garden
         Console.WriteLine(totaal)
     End Sub
 
-    Private Function FindNeighboursAndHoeken(Node As (x As Integer, y As Integer), Area As Integer, richting As Short) As Integer
-        Dim aantalNeighbours As Integer = 0
-        Dim Teken As Char = Map(Node)
-        Dim hoeken As Integer = 0
-
-        If Node.x > 0 Then
-            If Map((Node.x - 1, Node.y)) = Teken Then
-                aantalNeighbours += 1
-                If areas(Area).TryAdd((Node.x - 1, Node.y), 0) Then
-                    hoeken += FindNeighboursAndHoeken((Node.x - 1, Node.y), Area, 0)
-                    If richting <> 0 Then
-                        hoeken += 1
-                    End If
-                End If
-            End If
-        End If
-        If Node.x < upperX Then
-            If Map((Node.x + 1, Node.y)) = Teken Then
-                aantalNeighbours += 1
-                If areas(Area).TryAdd((Node.x + 1, Node.y), 0) Then
-                    hoeken += FindNeighboursAndHoeken((Node.x + 1, Node.y), Area, 1)
-                    If richting <> 1 Then
-                        hoeken += 1
-                    End If
-                End If
-            End If
-        End If
-        If Node.y > 0 Then
-            If Map((Node.x, Node.y - 1)) = Teken Then
-                aantalNeighbours += 1
-                If areas(Area).TryAdd((Node.x, Node.y - 1), 0) Then
-                    hoeken += FindNeighboursAndHoeken((Node.x, Node.y - 1), Area, 2)
-                    If richting <> 2 Then
-                        hoeken += 1
-                    End If
-                End If
-            End If
-        End If
-        If Node.y < upperY Then
-            If Map((Node.x, Node.y + 1)) = Teken Then
-                aantalNeighbours += 1
-                If areas(Area).TryAdd((Node.x, Node.y + 1), 0) Then
-                    hoeken += FindNeighboursAndHoeken((Node.x, Node.y + 1), Area, 3)
-                    If richting <> 3 Then
-                        hoeken += 1
-                    End If
-                End If
-            End If
-        End If
-
-        areas(Area)(Node) = 4 - aantalNeighbours
-
-        Return hoeken
-
-    End Function
-
 
     Private Sub FindNeighbours(Node As (x As Integer, y As Integer), Area As Integer)
-        Dim aantalNeighbours As Integer = 0
-        Dim Teken As Char = Map(Node)
-
         If Not areas(Area).TryAdd(Node, 0) Then
             Exit Sub
         End If
+
+        Dim aantalNeighbours As Integer = 0
+        Dim Teken As Char = Map(Node)
+        Dim links As Boolean = False
+        Dim rechts As Boolean = False
+        Dim boven As Boolean = False
+        Dim onder As Boolean = False
+
+        Dim linksboven As Boolean = False
+        Dim rechtsboven As Boolean = False
+        Dim linksonder As Boolean = False
+        Dim rechtsonder As Boolean = False
 
         If Node.x > 0 Then
             If Map((Node.x - 1, Node.y)) = Teken Then
                 FindNeighbours((Node.x - 1, Node.y), Area)
                 aantalNeighbours += 1
+                boven = True
+            End If
+
+            If Node.y > 0 Then
+                If Map((Node.x - 1, Node.y - 1)) = Teken Then linksboven = True
+            End If
+            If Node.y < upperY Then
+                If Map((Node.x - 1, Node.y + 1)) = Teken Then rechtsboven = True
             End If
         End If
+
         If Node.x < upperX Then
             If Map((Node.x + 1, Node.y)) = Teken Then
                 FindNeighbours((Node.x + 1, Node.y), Area)
                 aantalNeighbours += 1
+                onder = True
+            End If
+
+            If Node.y > 0 Then
+                If Map((Node.x + 1, Node.y - 1)) = Teken Then linksonder = True
+            End If
+            If Node.y < upperY Then
+                If Map((Node.x + 1, Node.y + 1)) = Teken Then rechtsonder = True
             End If
         End If
+
         If Node.y > 0 Then
             If Map((Node.x, Node.y - 1)) = Teken Then
                 FindNeighbours((Node.x, Node.y - 1), Area)
                 aantalNeighbours += 1
+                links = True
             End If
         End If
+
         If Node.y < upperY Then
             If Map((Node.x, Node.y + 1)) = Teken Then
                 FindNeighbours((Node.x, Node.y + 1), Area)
                 aantalNeighbours += 1
+                rechts = True
             End If
         End If
 
         areas(Area)(Node) = 4 - aantalNeighbours
+
+        If Not links Then
+            If Not boven OrElse linksboven Then
+                hoekenInt(Area) += 1
+            End If
+
+            If Not onder OrElse linksonder Then
+                hoekenInt(Area) += 1
+            End If
+
+        End If
+
+        If Not rechts Then
+            If Not boven OrElse rechtsboven Then
+                hoekenInt(Area) += 1
+            End If
+
+
+            If Not onder OrElse rechtsonder Then
+                hoekenInt(Area) += 1
+            End If
+
+        End If
 
     End Sub
 
