@@ -1,4 +1,5 @@
 ﻿Imports System.IO
+Imports System.Reflection
 
 Module Toilet
     Private upperX As Integer
@@ -26,32 +27,38 @@ Module Toilet
             Robots.Add(R)
         Next
 
-        Dim Eindposities As New List(Of Vector2D)
-
-        Dim Kwadrant1 As Integer = 0
-        Dim Kwadrant2 As Integer = 0
-        Dim Kwadrant3 As Integer = 0
-        Dim Kwadrant4 As Integer = 0
+        Dim tijd As Integer = 0
 
         For Each R In Robots
-            Dim Eindpositie As Vector2D = R.Move(100)
-            If Eindpositie.X < upperX / 2 Then
-                If Eindpositie.Y < upperY / 2 Then
-                    Kwadrant1 += 1
-                ElseIf Eindpositie.Y > upperY / 2 Then
-                    Kwadrant2 += 1
-                End If
-            ElseIf Eindpositie.X > upperX / 2 Then
-                If Eindpositie.Y < upperY / 2 Then
-                    Kwadrant3 += 1
-                ElseIf Eindpositie.Y > upperY / 2 Then
-                    Kwadrant4 += 1
-                End If
-            End If
+            R.Move(1614)
         Next
 
-        Console.WriteLine(Kwadrant4 * Kwadrant3 * Kwadrant2 * Kwadrant1)
 
+        While True
+
+            For Each R In Robots
+                Dim Eindpositie As Vector2D = R.Move(1)
+            Next
+
+            tijd += 1
+
+            If tijd Mod 101 = 0 Then
+                For y = 0 To upperY
+                    Console.WriteLine()
+                    For x = 0 To upperX
+                        Dim xcoord = x
+                        Dim ycoord = y
+                        If Robots.Where(Function(f) f.Positie.X = xcoord AndAlso f.Positie.Y = ycoord).Any Then
+                            Console.Write("x")
+                        Else
+                            Console.Write(".")
+                        End If
+                    Next
+                Next
+                Console.WriteLine(tijd.ToString)
+
+            End If
+        End While
 
     End Sub
 
@@ -70,7 +77,9 @@ Module Toilet
 
             Dim corrigeerde = New Vector2D(Math.Abs(eindX), Math.Abs(eindY))
 
-            Console.WriteLine(Positie.ToString + " - " + Snelheid.ToString + " -> " + Eindpositie.ToString + " -> " + corrigeerde.ToString)
+            'Console.WriteLine(Positie.ToString + " - " + Snelheid.ToString + " -> " + Eindpositie.ToString + " -> " + corrigeerde.ToString)
+
+            Positie = corrigeerde
 
             Return corrigeerde
         End Function
