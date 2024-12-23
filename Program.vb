@@ -4,7 +4,7 @@ Public Module Program
 
     Sub Main(args As String())
         Dim stopwatch As Stopwatch = Stopwatch.StartNew()
-        Race()
+        Operate()
         stopwatch.Stop()
         Console.WriteLine("In " + stopwatch.ElapsedMilliseconds.ToString + "ms")
         Dim x = Console.ReadLine()
