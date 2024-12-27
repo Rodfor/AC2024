@@ -94,8 +94,6 @@ Public Class Node
 
     Public Visited As Boolean = False
 
-    Public Waarde As Char
-
     Public Property HeapIndex As Integer
 
     Public ReadOnly Property Name As String
@@ -110,10 +108,9 @@ Public Class Node
         End Get
     End Property
 
-    Public Sub New(x As Integer, y As Integer, waarde As Char)
+    Public Sub New(x As Integer, y As Integer)
         Me.x = x
         Me.y = y
-        Me.Waarde = waarde
     End Sub
 
     Public Function CompareTo(N As Node) As Integer

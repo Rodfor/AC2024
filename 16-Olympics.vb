@@ -204,9 +204,11 @@ Module Olympics
 
         Public dir As Direction
         Public Parents As New List(Of Plaats)
+        Public Waarde As Char
 
         Public Sub New(x As Integer, y As Integer, waarde As Char, richting As Direction)
-            MyBase.New(x, y, waarde)
+            MyBase.New(x, y)
+            Me.Waarde = waarde
             Me.dir = richting
         End Sub
     End Class
