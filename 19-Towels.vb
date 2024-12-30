@@ -24,41 +24,53 @@ Module Towels
             End If
         Next
 
-        Dim correct As Integer = 0
+        Dim correct As Integer
+        Dim totaalCorrect As Long
+        Dim Trie As New Trie
 
-        InitACMatching(26, 1000, towels.ToArray)
+        For Each T In towels
+            Trie.InsertKey(T)
+        Next
+
 
         For Each P In Patterns
-            searchWords(P)
-            If MatchAll(P, 0, New HashSet(Of (Integer, Integer))) Then
-                Console.WriteLine(P + " - correct")
+            Dim n = P.Length
+            Dim dp(n) As Long
+            dp(0) = 1
+
+            For i = 1 To n
+                For j = 0 To i - 1
+                    If dp(j) > 0 AndAlso Trie.Search(P.Substring(j, i - j)) Then
+                        dp(i) += dp(j)
+                    End If
+                Next
+            Next
+
+            If dp(n) > 0 Then
+                Console.WriteLine(P + " - correct - " + dp(n).ToString)
                 correct += 1
+                totaalCorrect += dp(n)
             Else
                 Console.WriteLine(P + " - fout")
             End If
         Next
 
-        Console.WriteLine(correct)
+
+        Console.WriteLine("Deel1: " + correct.ToString)
+        Console.WriteLine("Deel2: " + totaalCorrect.ToString)
+
+        'InitACMatching(26, 1000, towels.ToArray)
+
+        'For Each P In Patterns
+        '    searchWords(P)
+        '    If MatchAll(P, 0, New HashSet(Of (Integer, Integer))) Then
+        '        Console.WriteLine(P + " - correct")
+        '        correct += 1
+        '    Else
+        '        Console.WriteLine(P + " - fout")
+        '    End If
+        'Next
+
     End Sub
 
-
-    Private Function FindOptions(Current As String, patroon As String) As List(Of String)
-        Dim newoptions As New List(Of String)
-
-        For Each T In towels
-            Dim newstring = Current + T
-            If newstring.Length <= patroon.Length AndAlso newstring = patroon.Substring(0, newstring.Length) Then
-                newoptions.Add(newstring)
-                'Console.WriteLine(patroon + " -> " + newstring + " - correct")
-            Else
-                'Console.WriteLine(patroon + " -> " + newstring + " - fout")
-            End If
-        Next
-
-        Return newoptions
-    End Function
-
-    Private Class ACNode
-        Public Child
-    End Class
 End Module

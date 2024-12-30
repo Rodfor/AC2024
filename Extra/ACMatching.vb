@@ -1,6 +1,10 @@
 ﻿Imports System.Collections.Generic
 Imports System.Globalization
 
+
+
+' Kapot voor grotere datasets?????
+
 Module ACMatching
 
     Private out() As Integer
@@ -14,8 +18,8 @@ Module ACMatching
     Private k As Integer
 
     Public Sub InitACMatching(MaxChar As Integer, MaxStates As Integer, keywords As String())
-        MAXC = MaxChar - 1
-        MAXS = MaxStates - 1
+        MAXC = MaxChar
+        MAXS = MaxStates
 
         ReDim out(MAXS)
         ReDim f(MAXS)
@@ -41,8 +45,8 @@ Module ACMatching
         Next
 
         ' Initialize all values in goto function as -1.
-        For i As Integer = 0 To MAXS
-            For j As Integer = 0 To MAXC
+        For i As Integer = 0 To MAXS - 1
+            For j As Integer = 0 To MAXC - 1
                 g(i, j) = -1
             Next
         Next
@@ -75,7 +79,7 @@ Module ACMatching
 
         ' For all characters which don't have an edge from root (or state 0) in Trie,
         ' add a goto edge to state 0 itself
-        For ch As Integer = 0 To MAXC
+        For ch As Integer = 0 To MAXC - 1
             If g(0, ch) = -1 Then
                 g(0, ch) = 0
             End If
@@ -83,7 +87,7 @@ Module ACMatching
 
         ' Now, let's build the failure function
         ' Initialize values in fail function for all states
-        For i As Integer = 0 To MAXC
+        For i As Integer = 0 To MAXC - 1
             f(i) = 0
         Next
 
@@ -91,7 +95,7 @@ Module ACMatching
         Dim q As New Queue(Of Integer)()
 
         ' Iterate over every possible input
-        For ch As Integer = 0 To MAXC
+        For ch As Integer = 0 To MAXC - 1
             ' All nodes of depth 1 have failure function value as 0.
             If g(0, ch) <> 0 Then
                 f(g(0, ch)) = 0
@@ -106,7 +110,7 @@ Module ACMatching
 
             ' For the removed state, find failure function for all those characters
             ' for which goto function is not defined.
-            For ch As Integer = 0 To MAXC
+            For ch As Integer = 0 To MAXC - 1
                 ' If goto function is defined for character 'ch' and 'state'
                 If g(state, ch) <> -1 Then
                     ' Find failure state of removed state
@@ -165,11 +169,11 @@ Module ACMatching
 
             ' Match found, print all matching words of arr using output function.
             For j As Integer = 0 To k - 1
-                If (out(currentState) And (1 << j)) > 0 Then
+                If out(currentState) And (1 << j) Then
                     Dim startIndex As Integer = i - arr(j).Length + 1
-                    If startIndex >= 0 Then
-                        Console.WriteLine("Word " & arr(j) & " appears from " & startIndex & " to " & i)
-                    End If
+                    'If startIndex >= 0 Then
+                    Console.WriteLine("Word " & arr(j) & " appears from " & startIndex & " to " & i)
+                    'End If
                 End If
             Next
         Next
