@@ -1,4 +1,5 @@
 ﻿Imports System.IO
+Imports System.Reflection.Metadata.Ecma335
 Imports System.Runtime.InteropServices
 Imports System.Security.Cryptography.X509Certificates
 Imports System.Windows
@@ -6,12 +7,8 @@ Imports System.Windows
 Module Robot
     Private NumPad As New Dictionary(Of Char, (x As Integer, y As Integer))
     Private Keypad As New Dictionary(Of Char, (x As Integer, y As Integer))
-    Private MemorySingle As New Dictionary(Of String, List(Of String))
-    Private MemoryMulti As New Dictionary(Of String, List(Of String))
 
-
-    Private Memory5 As New Dictionary(Of String, List(Of String))
-    Private Memory25 As New Dictionary(Of String, List(Of String))
+    Private Cache As New Dictionary(Of (c1 As Char, c2 As Char, diepte As Integer), Long)
 
     Public Sub Type()
         Dim fileName As String = "Robot.txt"
@@ -40,11 +37,16 @@ Module Robot
         Keypad.Add("v", (1, 1))
         Keypad.Add(">", (2, 1))
 
-        Dim robots As Integer = 25
+        Console.WriteLine("Deel 1 : " + Solve(Codes, 3).ToString)
+        Console.WriteLine("Deel 2 : " + Solve(Codes, 26).ToString)
+
+    End Sub
+
+    Private Function Solve(Codes As List(Of String), robots As Integer) As Long
         Dim totaal As Long = 0
 
         For Each C In Codes
-            Console.WriteLine(C + ":")
+            '  Console.WriteLine(C + ":")
 
             Dim Inputs As New List(Of String) From {
                 ""
@@ -64,181 +66,65 @@ Module Robot
                 Inputs = newOpties
             Next
 
-            Dim minInput As Integer = Inputs.Min(Function(x) x.Length)
-            Inputs = Inputs.Where(Function(x) x.Length = minInput).ToList()
+            Dim lengtes As New List(Of Long)
 
-            For i = 0 To 2
-                Dim newInputs As New List(Of String)
-                For Each inp In Inputs
-                    newInputs.AddRange(GetInputs(inp))
+            For Each inp In Inputs
+                Dim lengte As Long = 0
+
+                inp = "A" + inp
+
+                For i = 0 To inp.Length - 2
+                    lengte += GetLengte(inp(i), inp(i + 1), robots - 1)
                 Next
-                Inputs = newInputs
+
+                lengtes.Add(lengte)
             Next
 
-
-            'For R = 1 To robots - 1
-            '    Inputs = GetInputs(Inputs)
-            'Next
-
             Dim Numeric = CInt(C.Substring(1, C.Length - 2))
-            Dim complexity As Long = output.First.Length * Numeric
+            Dim complexity As Long = lengtes.Min * Numeric
 
-            Console.WriteLine(C + " - " + output.First.Length.ToString + " * " + Numeric.ToString + " = " + complexity.ToString)
+            ' Console.WriteLine(C + " - " + lengtes.Min.ToString + " * " + Numeric.ToString + " = " + complexity.ToString)
             totaal += complexity
 
         Next
 
-
-        Console.WriteLine(totaal)
-    End Sub
-
-
-    Private Function GetInputs25(input As String)
-        Dim opties As New List(Of String) From {
-             ""
-         }
-
-        For i = 0 To input.Length - 2
-            Dim newOpties As New List(Of String)
-            Dim key = input(i) + input(i + 1)
-            Dim memoryValues As List(Of String)
-
-            If Not Memory25.TryGetValue(key, memoryValues) Then
-                memoryValues = New List(Of String)
-                Memory25.Add(key, memoryValues)
-
-                Dim outputs As New List(Of String) From {
-                        key
-                    }
-
-                For k = 0 To 4
-                    Dim newoutputs As New List(Of String)
-                    For Each output In outputs
-                        newoutputs.AddRange(GetInputs5(output))
-                    Next
-                    outputs = newoutputs
-                Next
-
-                For Each O In outputs
-                    memoryValues.Add(O)
-                Next
-            End If
-
-            For Each S In memoryValues
-                For Each K In opties
-                    newOpties.Add(K + S)
-                Next
-            Next
-
-            opties = newOpties
-            Dim minOutput As Integer = opties.Min(Function(x) x.Length)
-            opties = opties.Where(Function(x) x.Length = minOutput).ToList()
-
-        Next
-
-        Return opties
+        Return totaal
 
     End Function
 
+    Private Function GetLengte(c1 As Char, c2 As Char, diepte As Integer) As Long
+        Dim lengte As Long = 0
 
-    Private Function GetInputs5(input As String)
-        Dim opties As New List(Of String) From {
-            ""
-        }
+        If diepte = 0 Then
+            lengte = 1
+        Else
+            If Not Cache.TryGetValue((c1, c2, diepte), lengte) Then
+                Dim Mogelijkheden = GetSequencesKeyPad(c1, c2)
+                Dim lengtes As New List(Of Long)
 
-        For i = 0 To input.Length - 2
-            Dim newOpties As New List(Of String)
-            Dim key = input(i) + input(i + 1)
-            Dim memoryValues As List(Of String)
-
-            If Not Memory5.TryGetValue(key, memoryValues) Then
-                memoryValues = New List(Of String)
-                Memory5.Add(key, memoryValues)
-
-                Dim outputs As New List(Of String) From {
-                        key
-                    }
-
-                For k = 0 To 4
-                    Dim newoutputs As New List(Of String)
-                    For Each output In outputs
-
-                        newoutputs.AddRange(GetInputs(output))
-                    Next
-                    outputs = newoutputs
-                Next
-
-                For Each O In outputs
-                    memoryValues.Add(O)
-                Next
-            End If
-
-            For Each S In memoryValues
-                For Each K In opties
-                    newOpties.Add(K + S)
-                Next
-            Next
-
-            opties = newOpties
-            Dim minOutput As Integer = opties.Min(Function(x) x.Length)
-            opties = opties.Where(Function(x) x.Length = minOutput).ToList()
-        Next
-
-        Return opties
-
-    End Function
-
-
-
-    Private Function GetInputs(Outputs As List(Of String))
-
-        Dim Inputs As New List(Of String)
-
-        For Each O In Outputs
-            O = "A" + O
-
-            Dim opties As List(Of String)
-
-            If MemoryMulti.TryGetValue(O, opties) Then
-                Inputs.AddRange(opties)
-            Else
-                opties = New List(Of String) From {
-                    ""
-                }
-
-                For i = 0 To O.Length - 2
-                    Dim newOpties As New List(Of String)
-                    Dim key = O(i) + O(i + 1)
-                    Dim memoryValues As List(Of String)
-
-                    If Not MemorySingle.TryGetValue(key, memoryValues) Then
-                        memoryValues = New List(Of String)
-                        MemorySingle.Add(key, memoryValues)
-                        For Each S In GetSequencesKeyPad(key)
-                            memoryValues.Add(S)
+                For Each S In Mogelijkheden
+                    Dim LengteA As Long = 0
+                    If S.Length = 1 Then
+                        LengteA = 1
+                    Else
+                        S = "A" + S
+                        For i = 0 To S.Length - 2
+                            LengteA += GetLengte(S(i), S(i + 1), diepte - 1)
                         Next
                     End If
 
-                    For Each S In memoryValues
-                        For Each K In opties
-                            newOpties.Add(K + S)
-                        Next
-                    Next
-
-                    opties = newOpties
+                    lengtes.Add(LengteA)
                 Next
 
-                MemoryMulti.Add(O, opties)
-                Inputs.AddRange(opties)
+                lengte = lengtes.Min
+                Cache.Add((c1, c2, diepte), lengte)
             End If
-        Next
+        End If
 
+        Return lengte
 
-        Dim minInput As Integer = Inputs.Min(Function(x) x.Length)
-        Inputs = Inputs.Where(Function(x) x.Length = minInput).ToList()
-
-        Return Inputs
     End Function
+
 
 
     Private Function GetSequencesNumberPad(S As Char, E As Char) As List(Of String)
@@ -247,103 +133,63 @@ Module Robot
         Dim difx As Short = NumPad(S).x - NumPad(E).x
         Dim difY As Short = NumPad(S).y - NumPad(E).y
 
-        Dim listx As String = ""
-
-        If difx > 0 Then
-            For i = 1 To difx
-                listx += "<"
-            Next
-        Else
-            For i = 1 To Math.Abs(difx)
-                listx += ">"
-            Next
-        End If
-
-        Dim listy As String = ""
-
-
-        If difY > 0 Then
-            For i = 1 To difY
-                listy += "^"
-            Next
-        Else
-            For i = 1 To Math.Abs(difY)
-                listy += "v"
-            Next
-        End If
+        MaakString("", Math.Abs(difY), If(difY > 0, "^", "v"), Math.Abs(difx), If(difx > 0, "<", ">"), opties)
 
         If difx <> 0 AndAlso difY <> 0 AndAlso (NumPad(S).x = 0 OrElse NumPad(E).x = 0) AndAlso (NumPad(S).y = 3 OrElse NumPad(E).y = 3) Then
-            If difY > 0 Then
-                opties.Add(listy + listx + "A")
-            Else
-                opties.Add(listx + listy + "A")
-            End If
-        Else
-            If listx.Length = 0 OrElse listy.Length = 0 Then
-                opties.Add(listx + listy + "A")
-            Else
-                opties.Add(listx + listy + "A")
-                opties.Add(listy + listx + "A")
-            End If
+            Select Case S
+                Case "7"
+                    opties.RemoveAll(Function(x) x.StartsWith("vvv"))
+                Case "4"
+                    opties.RemoveAll(Function(x) x.StartsWith("vv"))
+                Case "1"
+                    opties.RemoveAll(Function(x) x.StartsWith("v"))
+                Case "0"
+                    opties.RemoveAll(Function(x) x.StartsWith("<"))
+                Case "A"
+                    opties.RemoveAll(Function(x) x.StartsWith("<<"))
+            End Select
         End If
 
         Return opties
 
     End Function
 
-    Private Function GetSequencesKeyPad(SE As String) As List(Of String)
+    Private Function GetSequencesKeyPad(S As Char, E As Char) As List(Of String)
         Dim opties = New List(Of String)
-
-        Dim S = SE(0)
-        Dim E = SE(1)
 
         Dim difx As Short = Keypad(S).x - Keypad(E).x
         Dim difY As Short = Keypad(S).y - Keypad(E).y
 
-        Dim listx As String = ""
-
-        If difx > 0 Then
-            For i = 1 To difx
-                listx += "<"
-            Next
-        Else
-            For i = 1 To Math.Abs(difx)
-                listx += ">"
-            Next
-        End If
-
-        Dim listy As String = ""
-
-
-        If difY > 0 Then
-            For i = 1 To difY
-                listy += "^"
-            Next
-        Else
-            For i = 1 To Math.Abs(difY)
-                listy += "v"
-            Next
-        End If
+        MaakString("", Math.Abs(difY), If(difY > 0, "^", "v"), Math.Abs(difx), If(difx > 0, "<", ">"), opties)
 
         If difx <> 0 AndAlso difY <> 0 AndAlso (Keypad(S).x = 0 OrElse Keypad(E).x = 0) AndAlso (Keypad(S).y = 0 OrElse Keypad(E).y = 0) Then
-            If difY > 0 Then
-                opties.Add(listx + listy + "A")
-            Else
-                opties.Add(listy + listx + "A")
-            End If
-        Else
-            If listx.Length = 0 OrElse listy.Length = 0 Then
-                opties.Add(listx + listy + "A")
-            Else
-                opties.Add(listx + listy + "A")
-                opties.Add(listy + listx + "A")
-            End If
+            Select Case S
+                Case "A"
+                    opties.RemoveAll(Function(x) x.StartsWith("<<"))
+                Case "^"
+                    opties.RemoveAll(Function(x) x.StartsWith("<"))
+                Case "<"
+                    opties.RemoveAll(Function(x) x.StartsWith("^"))
+            End Select
         End If
 
-
         Return opties
-
     End Function
+
+    Private Sub MaakString(current As String, aantalA As Integer, A As Char, aantalB As Integer, B As Char, combinaties As List(Of String))
+        If aantalA = 0 AndAlso aantalB = 0 Then
+            combinaties.Add(current + "A")
+        Else
+            If aantalA > 0 Then
+                MaakString(current + A, aantalA - 1, A, aantalB, B, combinaties)
+            End If
+
+            If aantalB > 0 Then
+                MaakString(current + B, aantalA, A, aantalB - 1, B, combinaties)
+            End If
+        End If
+    End Sub
+
 
 
 End Module
