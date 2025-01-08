@@ -4,7 +4,7 @@ Public Module Program
 
     Sub Main(args As String())
         Dim stopwatch As Stopwatch = Stopwatch.StartNew()
-        Type()
+        Connect()
 
         stopwatch.Stop()
         Console.WriteLine("In " + stopwatch.ElapsedMilliseconds.ToString + "ms")
